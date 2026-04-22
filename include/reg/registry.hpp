@@ -21,7 +21,7 @@
 /**
  * @class Registry
  * @brief Centralized storage and execution engine for all language rules and mathematical operations.
- * * @details The Registry follows a Singleton-like access pattern for the parser pipeline.
+ * @details The Registry follows a Singleton-like access pattern for the parser pipeline.
  * It maps string symbols (e.g., "+", "sin", "pi") to their respective precedence rules,
  * associativity, and executable lambda functions.
  */
