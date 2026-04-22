@@ -1,6 +1,4 @@
-#include "registry.hpp"
-// Include your new Value definitions here
-// #include "Def_Value.hpp"
+#include "reg/registry.hpp"
 
 #include <cmath>
 #include <stdexcept>

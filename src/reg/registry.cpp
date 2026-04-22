@@ -1,4 +1,4 @@
-#include "registry.hpp"
+#include "reg/registry.hpp"
 
 void Registry::register_operator(const OperatorStruct& def)
 {
