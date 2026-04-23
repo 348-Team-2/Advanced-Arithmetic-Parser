@@ -12,15 +12,22 @@ set(REGISTRY_SOURCES
         src/reg/math.cpp
 )
 
+set(CLI_SOURCES
+        src/cli/cli.cpp
+)
+
 # ━━ LIBRARIES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Bundle the registry into a library so it can be shared between Main and Tests
 add_library(RegistryLib ${REGISTRY_SOURCES})
 target_include_directories(RegistryLib PUBLIC include)
 
+add_library(CLILib ${CLI_SOURCES})
+target_include_directories(CLILib PUBLIC include)
+
 # ━━ EXECUTABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 add_executable(ParserMain src/main.cpp)
 
-target_link_libraries(ParserMain PRIVATE RegistryLib)
+target_link_libraries(ParserMain PRIVATE RegistryLib CLILib)
 
 # Cross-platform compiler flags
 if(MSVC)
