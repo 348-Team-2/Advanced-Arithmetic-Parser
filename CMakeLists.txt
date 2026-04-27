@@ -58,10 +58,15 @@ add_project_module(LexerLib
         src/lexer/lexer.cpp
 )
 
+add_project_module(ErrorLib
+        SOURCES
+        src/err/debug.cpp
+)
+
 # ━━ EXECUTABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 add_executable(ParserMain src/main.cpp)
-target_link_libraries(ParserMain PRIVATE RegistryLib CLILib LexerLib
+target_link_libraries(ParserMain PRIVATE RegistryLib CLILib LexerLib ErrorLib
 )
 
 # Cross-platform compiler flags
