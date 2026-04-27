@@ -4,7 +4,7 @@
  * @details This file is responsible for reading user input and printing results or error messages.
  */
 
-#include "def_cli.hpp"
+#include "cli/def_cli.hpp"
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -18,7 +18,7 @@ void CLI::print(const std::string& message) {
 std::string CLI::read_input() {
     std::string input;
     std::getline(std::cin, input);
-    input.erase(std::remove_if(input.begin(), input.end(), ::isspace), input.end());
+    std::erase_if(input, ::isspace);
     
     // add "\n" to end input
     input += "\n";
