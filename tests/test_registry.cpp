@@ -3,7 +3,6 @@
 
 extern void load_registry(Registry& registry);
 
-
 TEST(SanityCheck, DoesGTestWork) {
     EXPECT_EQ(1, 1);
 }
@@ -84,11 +83,6 @@ TEST_F(RegistryTest, ThrowsOnInvalidTypes) {
     Value num = 5.0;
     Value vec = Vector{{1.0, 2.0, 3.0}}; // Assume Vector is defined in your types
 
-    // We haven't implemented Scalar + Vector yet, so this should trigger your fallback!
+    // Should trigger fallback
     EXPECT_THROW(reg.evaluate_binary("+", num, vec), std::runtime_error);
-}
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }

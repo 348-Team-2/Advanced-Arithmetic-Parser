@@ -1,66 +1,67 @@
 /**
  * @file tests.dox
- * @brief Documentation page detailing how to create new tests.
+ * @brief Documentation page detailing how to create new unit tests.
  */
 
 /**
- * @page writing_tests How to Write Registry Tests
+ * @page writing_tests How to Write Unit Tests
  * @tableofcontents
- * * Welcome to the Registry Testing Guide! This framework uses **Google Test (GTest)** * to ensure that operators, functions, and mathematical evaluations remain robust.
+ * * Welcome to the Unit Testing Guide! This framework uses **Google Test (GTest)** * to ensure that our components, classes, and logic remain robust.
  * * Follow this guide to create your own tests and expand the test suite.
- * * @section step1 Step 1: Choose the Right Macro
+ * @section step1 Step 1: Choose the Right Macro
  * * Google Test provides two primary macros for writing tests:
  * * - `TEST(TestSuiteName, TestName)`: Used for standalone tests that don't need
  * shared setup or teardown logic.
  * - `TEST_F(TestFixtureName, TestName)`: Used when you want to reuse a shared
- * setup (like an initialized `Registry`). **This is what you will use most often.**
- * * @section step2 Step 2: Use the Shared Fixture
- * * Because most tests require a fully loaded mathematical registry, we use a
- * "Test Fixture" called `RegistryTest`. Whenever you use `TEST_F(RegistryTest, ...)`,
- * GTest automatically creates a fresh `Registry` object named `reg` and populates
- * it before your test runs.
- * * @section step3 Step 3: Write Assertions
+ * setup (like an initialized class or database connection). **This is what you will use most often.**
+ * @section step2 Step 2: Use a Shared Fixture
+ * * Because many tests require objects to be in a specific initial state, we use
+ * "Test Fixtures". Whenever you use `TEST_F(YourFixtureTest, ...)`,
+ * GTest automatically creates a fresh instance of your setup before the test runs,
+ * ensuring tests do not interfere with one another.
+ * @section step3 Step 3: Write Assertions
  * * Inside your test, you will execute code and verify the results using GTest assertions.
  * Here are the most common ones you'll need:
  * * - `EXPECT_TRUE(condition)`: Verifies the condition is true.
  * - `EXPECT_FALSE(condition)`: Verifies the condition is false.
+ * - `EXPECT_EQ(val1, val2)`: Compares two values for equality.
  * - `EXPECT_DOUBLE_EQ(val1, val2)`: Compares two `double` values (handles floating-point precision).
  * - `EXPECT_THROW(statement, exception_type)`: Verifies that a specific exception is thrown.
- * *  **Note:** Use `EXPECT_*` instead of `ASSERT_*` when possible. `EXPECT_*` allows
+ * * **Note:** Use `EXPECT_*` instead of `ASSERT_*` when possible. `EXPECT_*` allows
  * the test to continue checking other conditions if it fails, whereas `ASSERT_*`
- *  aborts the current test immediately.
- *  @section template Boilerplate Template
+ * aborts the current test immediately.
+ * @section template Boilerplate Template
  * * Copy and paste the template below into a new `.cpp` file
- * in your test directory, and modify it to suit your needs
- * @code{.cpp}
+ * in your test directory, and modify it to suit your needs.
+ * * @code{.cpp}
  * #include <gtest/gtest.h>
- * #include "reg/registry.hpp"
- *
- * * // 1. Forward declare the loader if relying on the standard math dictionary
- * extern void load_registry(Registry& registry);
- * * // 2. Define the Fixture (Skip this if adding to an existing test file)
- * class RegistryTest : public ::testing::Test {
+ * #include "my_component.hpp" // 1. Include the header for what you are testing
+ * // 2. Define the Fixture (Skip this if adding to an existing test file)
+ * class MyComponentTest : public ::testing::Test {
  * protected:
-    * Registry reg;
-     * void SetUp() override {
-         * load_registry(reg);
-     * }
+ * MyComponent component;
+ * * // SetUp() is run immediately before each test
+ * void SetUp() override {
+ * component.initialize(); // Set your initial state here
+ * }
+ * * // TearDown() is run immediately after each test (optional)
+ * void TearDown() override {
+ * // Clean up resources if necessary
+ * }
  * };
- *
-    * * // 3. Write your test using TEST_F
-    * TEST_F(RegistryTest, DescriptionOfWhatYouAreTesting) {
-    * // Arrange: Set up your variables
-    * Value a = 10.0;
-    * Value b = 5.0;
-    * * // Act: Perform the action
-    * Value result = reg.evaluate_binary("-", a, b);
-    * * // Assert: Verify the outcome
-    * EXPECT_DOUBLE_EQ(std::get<double>(result), 5.0);
+ * // 3. Write your test using TEST_F
+ * TEST_F(MyComponentTest, ReturnsExpectedResultOnValidInput) {
+ * // Arrange: Set up your variables
+ * int input = 10;
+ * * // Act: Perform the action
+ * int result = component.process(input);
+ * * // Assert: Verify the outcome
+ * EXPECT_EQ(result, 20);
  * }
  * @endcode
- * * @section tips Pro-Tips for Good Tests
- * 1. **Keep it small**: Test one specific behavior per `TEST_F` block.
- * 2. **Test the Sad Path**: Don't just test that things work when the inputs are correct;
- * write tests that purposefully pass bad data (like division by zero or wrong arity)
- * to ensure your code throws the expected errors!
+ * @section tips Tips for Good Tests
+ * 1. **Keep it small**: Test one specific behavior or edge case per `TEST_F` block.
+ * 2. **Test the Sad Path**: Don't just test that things work when the inputs are correct.
+ * Write tests that purposefully pass bad data (like null pointers, out-of-bounds indices, or invalid strings)
+ * to ensure your code throws the expected errors or handles them gracefully!
  */
