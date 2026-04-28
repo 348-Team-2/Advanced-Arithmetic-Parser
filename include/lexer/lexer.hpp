@@ -27,8 +27,8 @@ private:
 
     size_t start = 0;                   ///< Start index of the current lexeme being parsed.
     size_t current = 0;                 ///< Current character index being evaluated.
-    int line = 1;                       ///< Current line number (for error tracking).
-    int column_start = 1;               ///< Column number where the current lexeme started.
+    size_t line = 1;                    ///< Current line number (for error tracking).
+    size_t column_start = 1;            ///< Column number where the current lexeme started.
 
     // ━━ Navigation Helpers ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -36,7 +36,7 @@ private:
      * @brief Checks if the lexer has consumed all characters in the source string.
      * @return true if the current index is at or beyond the string length, false otherwise.
      */
-    bool is_at_end() const;
+    [[nodiscard]] bool is_at_end() const;
 
     /**
      * @brief Consumes the current character and advances the lexer to the next one.
@@ -48,13 +48,13 @@ private:
      * @brief Looks at the current unconsumed character without advancing the lexer.
      * @return The current character, or the null terminator '\0' if at the end of the string.
      */
-    char peek() const;
+    [[nodiscard]] char peek() const;
 
     /**
      * @brief Looks ahead one character beyond the current unconsumed character.
      * @return The next character, or the null terminator '\0' if at the end of the string.
      */
-    char peek_next() const;
+    [[nodiscard]] char peek_next() const;
 
     /**
      * @brief Safely advances past all space, tab, carriage return, and newline characters.
@@ -105,7 +105,7 @@ private:
      * @param type The categorical classification of the extracted lexeme.
      * @param literal The encapsulated Value variant (defaults to an empty Value if not a number/constant).
      */
-    void add_token(TokenType type, Value literal = Value());
+    void add_token(TokenType type, const Value& literal = Value());
 
 public:
     /**
