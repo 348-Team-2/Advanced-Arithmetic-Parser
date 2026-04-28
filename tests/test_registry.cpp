@@ -40,8 +40,8 @@ TEST_F(RegistryTest, ReturnsCorrectPrecedence) {
 // ━━ 2. Test Binary Math ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 TEST_F(RegistryTest, EvaluatesAddition) {
-    constexpr Value a = 5.0;
-    constexpr Value b = 3.5;
+    const Value a = 5.0;
+    const Value b = 3.5;
 
     const Value result = reg.evaluate_binary("+", a, b);
 
@@ -50,8 +50,8 @@ TEST_F(RegistryTest, EvaluatesAddition) {
 }
 
 TEST_F(RegistryTest, EvaluatesExponentiation) {
-    constexpr Value a = 2.0;
-    constexpr Value b = 3.0;
+    const Value a = 2.0;
+    const Value b = 3.0;
 
     const Value result = reg.evaluate_binary("**", a, b);
     EXPECT_DOUBLE_EQ(std::get<double>(result), 8.0);
@@ -71,8 +71,8 @@ TEST_F(RegistryTest, EvaluatesMathFunctions) {
 // ━━ 4. Test Errors & Type Safety (The Sad Path) ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 TEST_F(RegistryTest, ThrowsOnDivisionByZero) {
-    constexpr Value a = 10.0;
-    constexpr Value b = 0.0;
+    const Value a = 10.0;
+    const Value b = 0.0;
 
     EXPECT_THROW(reg.evaluate_binary("/", a, b), std::runtime_error);
 }
@@ -85,7 +85,7 @@ TEST_F(RegistryTest, ThrowsOnInvalidFunctionArity) {
 }
 
 TEST_F(RegistryTest, ThrowsOnInvalidTypes) {
-    constexpr Value num = 5.0;
+    const Value num = 5.0;
     const Value vec = Vector{{1.0, 2.0, 3.0}}; // Assume Vector is defined in your types
 
     // Should trigger fallback
