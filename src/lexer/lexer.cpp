@@ -57,7 +57,7 @@ void Lexer::scan_token() {
 
 // ━━ Subroutines ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-bool Lexer::is_symbol(char c)
+bool Lexer::is_symbol(const char c)
 {
     // Defines characters that are allowed to form operators
     return std::string("+-*/%=<>!|&^~.").find(c) != std::string::npos;
@@ -121,7 +121,7 @@ void Lexer::process_identifier() {
     }
 }
 
-void Lexer::add_token(TokenType type, Value literal) {
+void Lexer::add_token(TokenType type, const Value& literal) {
     std::string text = source.substr(start, current - start);
     tokens.emplace_back(type, text, literal, line, column_start);
 }
@@ -129,7 +129,7 @@ void Lexer::add_token(TokenType type, Value literal) {
 // ━━ Internal Navigation Helpers ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 bool Lexer::is_at_end() const {
-    return current >= source.length();
+    return current >= source.length(); 
 }
 
 char Lexer::advance() {
