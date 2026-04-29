@@ -4,7 +4,7 @@
  * @details This file is responsible for reading user input and printing results or error messages.
  */
 
-#include "cli/def_cli.hpp"
+#include "cli/cli.hpp"
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -23,3 +23,30 @@ std::string CLI::read_input() {
     input += "\n";
     return input;
 }
+
+// ━━ CLI DEVELOPER STUBS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+void CLI::print_header() {
+    // TODO (CLI Dev): Feel free to replace this with elaborate ASCII art or whatever works
+    print("        CLI Calculator Engine           ");
+    print( "Type an expression to evaluate." );
+}
+
+void CLI::print_footer() {
+    print("Exiting");
+}
+
+void CLI::print_error(const ParseError& e) {
+    // TODO (CLI Dev): Add terminal color codes (e.g., Red) or formatting here.
+    print("Syntax Error: " + std::string(e.what()));
+    print("  At token: '" + e.token.lexeme +
+                     "' (Line " + std::to_string(e.token.line) +
+                     ", Col " + std::to_string(e.token.column) + ")");
+}
+
+void CLI::print_value(const Value& val) {
+    print("");
+}
+
+// TODO: Take a look at err/debug. Do you want to move that here? If so, make sure to edit the Engine.hpp file in
+// core/engine to use the correct functions.
