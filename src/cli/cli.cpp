@@ -48,6 +48,24 @@ void CLI::print_error(const ParseError& e, const std::string* input) {
     if (input == nullptr) {
         return; // No input provided
     }
+
+    // Handle optional error position feature
+    std::isstringstream stream(*input);
+    std::string line;
+    int current_line = 1;
+    while (std::getline(stream, line)) {
+        if (current_line == e.token.line) {
+            print("  " + line); // Print the line with the error
+            std::string carrot_line(
+                static_cast<size_t>(std::max(e.token.column - 1, 0)), ' '); // Spaces before the carrot
+            carrot_line += "^"; 
+            print("  " + carrot_line); // Print the carrot pointing to the error column
+            break;
+            )
+        }
+        current_line++;
+    }
+
 }
 
 void CLI::print_value(const Value& val) {
