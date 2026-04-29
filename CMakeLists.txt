@@ -79,11 +79,17 @@ add_project_module(ParserLib
         src/parse/parser.cpp
 )
 
+add_project_module(EvalLib
+        SOURCES
+        src/eval/evaluator.cpp
+)
+
 add_project_module(Engine
         LINK_LIBS
         LexerLib
         ParserLib
         RegistryLib
+        EvalLib
 )
 
 # ━━ EXECUTABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

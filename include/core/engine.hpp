@@ -16,6 +16,7 @@
 #include "reg/registry.hpp"
 #include "reg/math.hpp"
 #include "err/debug.hpp"
+#include "eval/evaluator.hpp"
 
 // ━━ ENGINE CORE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -62,7 +63,7 @@ public:
         Lexer lexer(registry);
         std::vector<Token> tokens = lexer.tokenize(input);
 
-        print_token_stream(tokens);
+        // print_token_stream(tokens); TODO: Move to occur on verbose
 
         if (tokens.empty() || tokens.front().type == TokenType::EOF_TOKEN) {
             throw std::runtime_error("Empty expression.");
@@ -71,10 +72,13 @@ public:
         Parser parser(tokens, registry);
         auto ast = parser.parse();
 
-        print_ast(ast.get());
-        print_ast_graphviz(ast.get());
+        // print_ast(ast.get()); TODO: Move to occur on verbose
+        // print_ast_graphviz(ast.get());
 
-        // TODO: Pass 'ast' to the Evaluator class
+        Evaluator evaluator(registry);
+        Value result = evaluator.evaluate(*ast);
+
+        CLI::print_value(result);
 
         return 0.0;
     };

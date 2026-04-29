@@ -5,6 +5,7 @@
  */
 
 #include "cli/cli.hpp"
+#include "cli/format_value.hpp"
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -45,7 +46,7 @@ void CLI::print_error(const ParseError& e) {
 }
 
 void CLI::print_value(const Value& val) {
-    print("");
+    print(to_string(val));
 }
 
 // TODO: Take a look at err/debug. Do you want to move that here? If so, make sure to edit the Engine.hpp file in

@@ -14,6 +14,7 @@
 #include <complex>
 #include <stdexcept>
 #include <string>
+#include <sstream>
 
 /// @brief Represents a 1D Vector for spatial math and dot/cross products.
 struct Vector {
@@ -42,7 +43,7 @@ struct Set {
 /// @note Replaces raw 'double' to support multiple mathematical types dynamically.
 using Value = std::variant<double, std::complex<double>, Vector, Matrix, Tensor, Set>;
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━ TYPE IDENTIFICATION ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 /// @brief Safely extracts a string representation of a Value's type for error logging.
 inline std::string get_type_name(const Value& v) {

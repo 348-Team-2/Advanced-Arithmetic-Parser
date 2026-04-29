@@ -1,5 +1,5 @@
 /**
-* @file def_cli.hpp
+* @file cli.hpp
  * @brief Declares the CLI class which manages user input and output.
  * @details This header defines the interface for the CLI component of the calculator.
  */
