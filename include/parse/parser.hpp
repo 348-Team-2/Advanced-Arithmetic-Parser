@@ -1,181 +1,79 @@
+/**
+ * @file parser.hpp
+ * @brief Defines the Parser class.
+ * @details This header provides the recursive descent parser responsible for converting
+ * a flat stream of tokens from the Lexer into an executable tree structure. It respects
+ * mathematical precedence, associativity, and differentiates between prefix, postfix,
+ * and binary operators dynamically via the Registry.
+ */
+
 #pragma once
 
 #include <vector>
 #include <string>
 #include <memory>
-#include <cmath>
+#include <stdexcept>
 
+#include "def_ast.hpp"
+#include "../lexer/lexer.hpp"
+#include "../reg/registry.hpp"
 
-// ======================================================
-// AST BASE CLASS
-// ======================================================
+// ━━ PARSER EXCEPTION ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-struct ASTNode {
-    virtual ~ASTNode() = default;
-    virtual Value evaluate(const Registry& reg) const = 0;
-    virtual std::vector<std::string> to_list() const = 0;
+/**
+ * @class ParseError
+ * @brief Custom exception thrown when a syntax error is encountered.
+ * @details Captures the exact token that caused the failure to allow the CLI
+ * to pinpoint the error's line and column for the user.
+ */
+class ParseError : public std::runtime_error {
+public:
+    Token token; ///< The specific token where the syntax error occurred.
+    
+    ParseError(const std::string& message, const Token& t)
+        : std::runtime_error(message), token(t) {}
 };
 
-// ======================================================
-// LITERAL NODE
-// ======================================================
+// ━━ PARSER ENGINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-struct LiteralNode : public ASTNode {
-    Value value;
-
-    explicit LiteralNode(Value v)
-        : value(std::move(v)) {}
-
-    Value evaluate(const Registry&) const override {
-        return value;
-    }
-
-    std::vector<std::string> to_list() const override {
-        if (std::holds_alternative<double>(value)) {
-            double d = std::get<double>(value);
-            if (d == std::floor(d)) {
-                return {std::to_string(static_cast<long long>(d))};
-            } else {
-                return {std::to_string(d)};
-            }
-        }
-        return {"literal"}; // placeholder for other types
-    }
-};
-
-// ======================================================
-// BINARY OPERATOR NODE
-// ======================================================
-
-struct BinaryOpNode : public ASTNode {
-    std::string op;
-    std::unique_ptr<ASTNode> left;
-    std::unique_ptr<ASTNode> right;
-
-    BinaryOpNode(std::string o,
-                 std::unique_ptr<ASTNode> l,
-                 std::unique_ptr<ASTNode> r)
-        : op(std::move(o)),
-          left(std::move(l)),
-          right(std::move(r)) {}
-
-    Value evaluate(const Registry& reg) const override {
-        return reg.evaluate_binary(op,
-                                   left->evaluate(reg),
-                                   right->evaluate(reg));
-    }
-
-    std::vector<std::string> to_list() const override {
-        auto l = left->to_list();
-        auto r = right->to_list();
-        l.insert(l.end(), r.begin(), r.end());
-        l.push_back(op);
-        return l;
-    }
-};
-
-// ======================================================
-// UNARY OPERATOR NODE
-// ======================================================
-
-struct UnaryOpNode : public ASTNode {
-    std::string op;
-    std::unique_ptr<ASTNode> operand;
-
-    UnaryOpNode(std::string o,
-                std::unique_ptr<ASTNode> opnd)
-        : op(std::move(o)),
-          operand(std::move(opnd)) {}
-
-    Value evaluate(const Registry& reg) const override {
-        return reg.evaluate_unary(op,
-                                  operand->evaluate(reg));
-    }
-
-    std::vector<std::string> to_list() const override {
-        auto o = operand->to_list();
-        o.push_back(op);
-        return o;
-    }
-};
-
-// ======================================================
-// FUNCTION CALL NODE
-// ======================================================
-
-struct FunctionCallNode : public ASTNode {
-    std::string name;
-    std::vector<std::unique_ptr<ASTNode>> args;
-
-    FunctionCallNode(std::string n,
-                     std::vector<std::unique_ptr<ASTNode>> a)
-        : name(std::move(n)),
-          args(std::move(a)) {}
-
-    Value evaluate(const Registry& reg) const override {
-        std::vector<Value> vals;
-        vals.reserve(args.size());
-        for (const auto& arg : args)
-            vals.push_back(arg->evaluate(reg));
-        return reg.evaluate_function(name, vals);
-    }
-
-    std::vector<std::string> to_list() const override {
-        std::vector<std::string> result;
-        for (const auto& arg : args) {
-            auto arg_list = arg->to_list();
-            result.insert(result.end(), arg_list.begin(), arg_list.end());
-        }
-        result.push_back(name);
-        return result;
-    }
-};
-
-// ======================================================
-// CONSTANT NODE
-// ======================================================
-
-struct ConstantNode : public ASTNode {
-    std::string name;
-
-    explicit ConstantNode(std::string n)
-        : name(std::move(n)) {}
-
-    Value evaluate(const Registry& reg) const override {
-        return reg.get_constant(name);
-    }
-
-    std::vector<std::string> to_list() const override {
-        return {name};
-    }
-};
-
-// ======================================================
-// PARSER CLASS
-// ======================================================
-
+/**
+ * @class Parser
+ * @brief Consumes Lexer tokens to construct an executable Abstract Syntax Tree.
+ */
 class Parser {
 private:
-    std::vector<Token*> tokens;
-    size_t current = 0;
-    Registry& registry;
+    const std::vector<Token>& tokens; ///< Constant reference to the immutable token stream.
+    size_t current = 0;               ///< Current index in the token stream.
+    Registry& registry;               ///< Reference to the math logic engine.
 
 public:
-    Parser(std::vector<Token*>& t, Registry& r)
+    /**
+     * @brief Constructs a new Parser instance for a single evaluation run.
+     * @param t The generated token stream from the Lexer.
+     * @param r The system Registry to dynamically query math rules.
+     */
+    Parser(const std::vector<Token>& t, Registry& r)
         : tokens(t), registry(r) {}
 
+    /**
+     * @brief Begins the recursive descent parsing process.
+     * @return A unique pointer to the root node of the AST.
+     * @throws ParseError If the grammar rules are violated.
+     */
     std::unique_ptr<ASTNode> parse();
 
 private:
+    // Recursive Descent Tiers
     std::unique_ptr<ASTNode> expression();
     std::unique_ptr<ASTNode> parse_binary(int min_precedence);
     std::unique_ptr<ASTNode> unary();
+    std::unique_ptr<ASTNode> postfix();
     std::unique_ptr<ASTNode> primary();
 
-    Token* peek();
-    Token* advance();
+    // Navigation and Matching
+    const Token* peek() const;
+    const Token* advance();
     bool match(TokenType type);
-
-    // MUST be const to match parser.cpp
     bool is_at_end() const;
+    Token error_token() const;
 };

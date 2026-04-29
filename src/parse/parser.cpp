@@ -1,45 +1,39 @@
 #include "parse/parser.hpp"
-#include <stdexcept>
+#include "parse/def_ast.hpp"
+#include "reg/registry.hpp"
 
-// -------------------------
-// Top-level parse()
-// -------------------------
+// ━━ PUBLIC ENTRY POINT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 std::unique_ptr<ASTNode> Parser::parse() {
     auto ast = expression();
     if (!is_at_end()) {
-        throw std::runtime_error("Unexpected tokens after expression");
+        throw ParseError("Unexpected tokens found after complete expression.", error_token());
     }
     return ast;
 }
 
-// -------------------------
-// Expression entry point
-// -------------------------
+// ━━ RECURSIVE DESCENT PIPELINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 std::unique_ptr<ASTNode> Parser::expression() {
     return parse_binary(0);
 }
 
-// -------------------------
-// Precedence-climbing binary parser
-// -------------------------
 std::unique_ptr<ASTNode> Parser::parse_binary(int min_prec) {
     auto left = unary();
 
-    while (!is_at_end() && peek() && peek()->type == TokenType::OPERATOR) {
+    while (!is_at_end() && peek()->type == TokenType::OPERATOR) {
         std::string op = peek()->lexeme;
 
-        // Skip unary-only operators
-        if (!registry.is_binary(op))
-            break;
+        // Skip operators that aren't registered as binary (e.g., standalone prefix)
+        if (!registry.is_binary(op)) break;
 
-        int prec = registry.get_precedence(op);
-        if (prec < min_prec)
-            break;
+        const int prec = registry.get_precedence(op);
+        if (prec < min_prec) break;
 
-        Associativity assoc = registry.get_associativity(op);
-        int next_min_prec = prec + (assoc == Associativity::LEFT ? 1 : 0);
+        const Associativity assoc = registry.get_associativity(op);
+        const int next_min_prec = prec + (assoc == Associativity::LEFT ? 1 : 0);
 
-        advance(); // consume operator
+        advance(); // Consume operator
         auto right = parse_binary(next_min_prec);
 
         left = std::make_unique<BinaryOpNode>(op, std::move(left), std::move(right));
@@ -48,49 +42,70 @@ std::unique_ptr<ASTNode> Parser::parse_binary(int min_prec) {
     return left;
 }
 
-// -------------------------
-// Unary operator parsing
-// -------------------------
 std::unique_ptr<ASTNode> Parser::unary() {
     if (peek() && peek()->type == TokenType::OPERATOR) {
         std::string op = peek()->lexeme;
 
+        // Contextual Translation: Map standard symbols to their prefix variants
+        if (op == "-") op = "u-";
+        else if (op == "+") op = "u+";
+        else if (op == "!") op = "u!"; // Prefix logical NOT
+
         if (registry.is_unary(op)) {
-            advance();
-            auto operand = unary();
+            advance(); // Consume the operator token
+            auto operand = unary(); // Recurse to allow stacked prefix (e.g., -!5)
             return std::make_unique<UnaryOpNode>(op, std::move(operand));
         }
     }
 
-    return primary();
+    return postfix();
 }
 
-// -------------------------
-// Primary expressions
-// -------------------------
+std::unique_ptr<ASTNode> Parser::postfix() {
+    auto expr = primary();
+
+    while (peek() && peek()->type == TokenType::OPERATOR) {
+        std::string op = peek()->lexeme;
+
+        // Contextual Translation: Map standard symbols to their postfix variants
+        if (op == "!") op = "p!"; // Postfix factorial
+
+        if (registry.is_unary(op)) {
+            advance(); // Consume the postfix operator
+            // Wrap the existing expression as the operand
+            expr = std::make_unique<UnaryOpNode>(op, std::move(expr));
+        } else {
+            break; // Not a postfix operator, kick back up to parse_binary
+        }
+    }
+
+    return expr;
+}
+
 std::unique_ptr<ASTNode> Parser::primary() {
-    // NUMBER
-    if (peek() && peek()->type == TokenType::NUMBER) {
-        Token* token = advance();
+    // ━━ NUMBERS & CONSTANTS ━━
+    if (peek()->type == TokenType::NUMBER) {
+        const Token* token = advance();
         return std::make_unique<LiteralNode>(token->literal);
     }
 
-    // IDENTIFIER (constants only)
-    if (peek() && peek()->type == TokenType::IDENTIFIER) {
-        Token* token = advance();
+    if (peek()->type == TokenType::IDENTIFIER) {
+        const Token* token = advance();
+        // Since Lexer already fetches the Value for constants, treat it as a literal
         if (registry.is_const(token->lexeme)) {
-            return std::make_unique<ConstantNode>(token->lexeme);
+            return std::make_unique<LiteralNode>(token->literal);
         }
-        throw std::runtime_error("Unknown identifier: " + token->lexeme);
+        throw ParseError("Unknown identifier or unregistered variable: " + token->lexeme, *token);
     }
 
-    // FUNCTION CALL
-    if (peek() && peek()->type == TokenType::FUNCTION) {
-        Token* token = advance();
+    // ━━ FUNCTIONS ━━
+    if (peek()->type == TokenType::FUNCTION) {
+        const Token* token = advance();
         std::string name = token->lexeme;
 
-        if (!match(TokenType::LPAREN))
-            throw std::runtime_error("Expected ( after function");
+        if (!match(TokenType::LPAREN)) {
+            throw ParseError("Expected '(' after function name.", error_token());
+        }
 
         std::vector<std::unique_ptr<ASTNode>> args;
 
@@ -99,47 +114,54 @@ std::unique_ptr<ASTNode> Parser::primary() {
                 args.push_back(expression());
             } while (match(TokenType::COMMA));
 
-            if (!match(TokenType::RPAREN))
-                throw std::runtime_error("Expected ) after arguments");
+            if (!match(TokenType::RPAREN)) {
+                throw ParseError("Expected ')' after function arguments.", error_token());
+            }
         }
 
         return std::make_unique<FunctionCallNode>(name, std::move(args));
     }
 
-    // PARENTHESIZED EXPRESSION
+    // ━━ GROUPING ━━
     if (match(TokenType::LPAREN)) {
         auto expr = expression();
-        if (!match(TokenType::RPAREN))
-            throw std::runtime_error("Expected )");
+        if (!match(TokenType::RPAREN)) {
+            throw ParseError("Mismatched parentheses, expected closing ')'.", error_token());
+        }
         return expr;
     }
 
-    // ERROR
-    Token* token = peek();
-    throw std::runtime_error("Unexpected token: " + (token ? token->lexeme : "EOF"));
+    // ━━ FALLBACK ERROR ━━
+    throw ParseError("Unexpected token encountered during parsing.", error_token());
 }
 
-// -------------------------
-// Token utilities
-// -------------------------
-Token* Parser::peek() {
-    if (is_at_end()) return nullptr;
-    return tokens[current];
+// ━━ INTERNAL NAVIGATION HELPERS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const Token* Parser::peek() const {
+    if (is_at_end()) return &tokens.back(); // Safely return EOF token if out of bounds
+    return &tokens[current];
 }
 
-Token* Parser::advance() {
+const Token* Parser::advance() {
     if (!is_at_end()) current++;
-    return tokens[current - 1];
+    return &tokens[current - 1];
 }
 
 bool Parser::match(TokenType type) {
-    if (is_at_end() || !peek() || peek()->type != type)
+    if (is_at_end() || peek()->type != type) {
         return false;
+    }
     advance();
     return true;
 }
 
 bool Parser::is_at_end() const {
-    return current >= tokens.size() ||
-           tokens[current]->type == TokenType::EOF_TOKEN;
+    // Ensures we don't access out of bounds, and stops at the Lexer's EOF token
+    return current >= tokens.size() || tokens[current].type == TokenType::EOF_TOKEN;
+}
+
+Token Parser::error_token() const {
+    // Utility to grab the offending token for the exception system
+    if (current >= tokens.size()) return tokens.back(); // Usually EOF
+    return tokens[current];
 }
