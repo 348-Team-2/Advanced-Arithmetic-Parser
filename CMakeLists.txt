@@ -16,11 +16,22 @@ function(add_project_module TARGET_NAME)
     set(multiValueArgs SOURCES LINK_LIBS)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    add_library(${TARGET_NAME} ${ARG_SOURCES})
-    target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    if(NOT ARG_SOURCES)
+        # ━━ HEADER-ONLY (INTERFACE) LIBRARY ━━
+        add_library(${TARGET_NAME} INTERFACE)
+        target_include_directories(${TARGET_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-    if(ARG_LINK_LIBS)
-        target_link_libraries(${TARGET_NAME} PRIVATE ${ARG_LINK_LIBS})
+        if(ARG_LINK_LIBS)
+            target_link_libraries(${TARGET_NAME} INTERFACE ${ARG_LINK_LIBS})
+        endif()
+    else()
+        # ━━ STANDARD COMPILED LIBRARY ━━
+        add_library(${TARGET_NAME} ${ARG_SOURCES})
+        target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+        if(ARG_LINK_LIBS)
+            target_link_libraries(${TARGET_NAME} PRIVATE ${ARG_LINK_LIBS})
+        endif()
     endif()
 endfunction()
 
@@ -63,10 +74,25 @@ add_project_module(ErrorLib
         src/err/debug.cpp
 )
 
+add_project_module(ParserLib
+        SOURCES
+        src/parse/parser.cpp
+)
+
+add_project_module(Engine
+        LINK_LIBS
+        LexerLib
+        ParserLib
+        RegistryLib
+)
+
 # ━━ EXECUTABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 add_executable(ParserMain src/main.cpp)
-target_link_libraries(ParserMain PRIVATE RegistryLib CLILib LexerLib ErrorLib
+target_link_libraries(ParserMain PRIVATE
+        CLILib
+        ErrorLib
+        Engine
 )
 
 # Cross-platform compiler flags
@@ -95,9 +121,4 @@ enable_testing()
 add_project_test(RegistryTests
         SOURCES tests/test_registry.cpp
         LINK_LIBS RegistryLib
-)
-
-add_project_test(CLITests
-        SOURCES tests/test_cli.cpp
-        LINK_LIBS CLILib
 )

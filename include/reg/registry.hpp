@@ -90,6 +90,20 @@ public:
     bool is_funct(const std::string& name) const;
 
     /**
+     * @brief Checks if a registered operator supports binary operations.
+     * @param symbol The exact registry key (e.g., "+", "-", "**").
+     * @return true if the operator exists and has binary execution logic.
+     */
+    bool is_binary(const std::string& symbol) const;
+
+    /**
+     * @brief Checks if a registered operator supports unary operations.
+     * @param symbol The exact registry key (e.g., "u-", "p!").
+     * @return true if the operator exists and is flagged as unary.
+     */
+    bool is_unary(const std::string& symbol) const;
+
+    /**
      * @brief Retrieves the priority level of an operator to determine evaluation order.
      * @param symbol The operator string to query.
      * @return An integer representing precedence (higher evaluates first).

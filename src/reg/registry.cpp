@@ -46,6 +46,24 @@ bool Registry::is_funct(const std::string& name) const
     return functions.contains(name);
 }
 
+bool Registry::is_binary(const std::string& symbol) const {
+    // An operator is binary if it exists AND its binary std::function contains a target
+    if (const auto it = operators.find(symbol); it != operators.end()) {
+        return static_cast<bool>(it->second.evaluate_binary);
+    }
+
+    return false;
+}
+
+bool Registry::is_unary(const std::string& symbol) const {
+    // An operator is unary if it exists AND the boolean flag is true
+    if (const auto it = operators.find(symbol); it != operators.end()) {
+        return it->second.is_unary;
+    }
+
+    return false;
+}
+
 int Registry::get_precedence(const std::string& symbol) const {
     const auto it = operators.find(symbol);
     if (it == operators.end()) {
