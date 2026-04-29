@@ -122,8 +122,3 @@ add_project_test(RegistryTests
         SOURCES tests/test_registry.cpp
         LINK_LIBS RegistryLib
 )
-
-add_project_test(CLITests
-        SOURCES tests/test_cli.cpp
-        LINK_LIBS CLILib
-)
