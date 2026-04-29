@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "cli/def_cli.hpp"
+#include "cli/cli.hpp"
 #include <iostream>
 #include <sstream>
 
