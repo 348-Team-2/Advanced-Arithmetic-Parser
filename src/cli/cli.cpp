@@ -12,6 +12,11 @@
 #include <sstream>
 #include <cctype>
 
+namespace Color {
+    const std::string RED = "\033[31m";
+    const std::string RESET = "\033[0m";
+}
+
 void CLI::print(const std::string& message) {
     std::cout << message << std::endl;
 }
