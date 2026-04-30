@@ -61,3 +61,4 @@ General project documentation is held in this table.
 | Bug Report Template                  | `\.github\ISSUE_TEMPLATES\bug_report.md`      |
 | Feature Request Template             | `\.github\ISSUE_TEMPLATES\feature_request.md` |
 | Meeting Notes                        | `\doc\meetings\*`                             |
+| User Manual                          | [User Manual](https://docs.google.com/document/d/1PIQnWDXynxEoy6nxhv7LA0aFNWDqYkrsK4scJRYbYG8/edit?usp=sharing) |
