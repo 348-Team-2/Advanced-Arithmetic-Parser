@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <numbers>
+#include <algorithm>
 
 /**
  * @brief Instructions for adding operations:
