@@ -14,7 +14,59 @@ In summary the project will be able to:
 5. Gracefully handle any errors.
 
 ## Building Project
+### Cycle Server (KU EECS)
 
+The project can be built and run on the KU cycle server (`cycle3.eecs.ku.edu`) without root access using Miniconda to install CMake and the C++ compiler.
+
+**Step 1 — SSH into the cycle server**
+```bash
+ssh your_ku_username@cycle3.eecs.ku.edu
+```
+Enter your KU password when prompted.
+
+**Step 2 — Install Miniconda**
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+```
+During installation:
+- Hold Space to scroll through the license, then type `yes`
+- Press Enter to confirm the default install location
+- When asked to initialize conda, type `yes`
+
+Then reload your shell:
+```bash
+source ~/.bashrc
+```
+
+**Step 3 — Accept conda terms of service**
+```bash
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+```
+
+**Step 4 — Install CMake and the C++ compiler**
+```bash
+conda install -c conda-forge cmake cxx-compiler -y
+```
+
+**Step 5 — Clone the repository**
+```bash
+git clone https://github.com/348-Team-2/Term-Project.git
+cd Term-Project
+```
+
+**Step 6 — Build the project**
+```bash
+mkdir build && cd build
+cmake ..
+make
+```
+
+**Step 7 — Run the program**
+```bash
+./ParserMain
+```
 ### VSCode
 Ensure CMake is installed, and command cmake is on path. An easy way to verify this is by running ```cmake --version```. If it returns
 some version number, you are ready to go.
