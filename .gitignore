@@ -58,6 +58,9 @@ dkms.conf
 *.idea
 *.vscode
 
+#build dirs
+cmake*/
+
 #doxygen
 html/
 latex/
