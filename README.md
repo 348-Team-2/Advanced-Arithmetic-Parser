@@ -108,7 +108,7 @@ General project documentation is held in this table.
 | Software Requirement Specification   | `\doc\SDP-SRS-xxxx-xx-xx.pdf`                 |
 | Software Architecture Document       | `\doc\SDP-SAD-xxxx-xx-xx.pdf`                 |
 | Test Cases Document                  | `\doc\SDP-TC-xxxx-xx-xx.pdf`                  |
-| Use Case Modeling                    | `\doc\USE-CASE-MODEL-xxxx-xx-xx.svg`          |
+| Use Case Modeling                    | `\doc\SRS-USE-CASE-MODEL-xxxx-xx-xx.svg`      |
 | User Manual                          | `\doc\USER-GUIDE-xxxx-xx-xx.pdf`              |
 | Pull Request Template                | `\.github\PULL_REQUEST_TEMPLATE.md`           |
 | Bug Report Template                  | `\.github\ISSUE_TEMPLATES\bug_report.md`      |
