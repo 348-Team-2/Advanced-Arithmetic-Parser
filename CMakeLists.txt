@@ -128,3 +128,23 @@ add_project_test(RegistryTests
         SOURCES tests/test_registry.cpp
         LINK_LIBS RegistryLib
 )
+
+add_project_test(LexerTests
+        SOURCES tests/test_lexer.cpp
+        LINK_LIBS LexerLib RegistryLib
+)
+
+add_project_test(ParserTests
+        SOURCES tests/test_parser.cpp
+        LINK_LIBS ParserLib LexerLib RegistryLib
+)
+
+add_project_test(EvaluatorTests
+        SOURCES tests/test_evaluator.cpp
+        LINK_LIBS EvalLib ParserLib LexerLib RegistryLib
+)
+
+add_project_test(EngineTests
+        SOURCES tests/test_engine.cpp
+        LINK_LIBS Engine CLILib ErrorLib
+)
